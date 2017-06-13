@@ -1,0 +1,51 @@
+//This is a Java program that connects to a MySQL database and retrieves 
+//data that matches the timestamp of May 1st in the MySQL database and 
+//print it to a file in /tmp/data.csv.
+
+
+import java.sql.DriverManager;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.sql.ResultSet;
+import java.nio.file.*
+import java.io.*
+import static jave.nio.file.StandardOpenOption.*;
+
+
+public class MySqlConnect {
+  public static void main(String[] args) {
+
+    try {
+      Class.forName("com.mysql.jdbc.Driver");
+
+      //Gets connection. Used name of create table because I didn't know the name of the file.
+      Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/location", "","");
+
+      //Create Statement
+      Statement st = con.createStatement();
+
+      //Results Set
+      ResultsSet rs = st.executeQuery("SELECT * FROM location WHERE 'timestamp' BETWEEN '2017-5-1 00:00:00' AND '2017-5-1 23:59:59'");
+
+      //Creates path to file to save mysql data to.
+      Path fileDate = Paths.get("C:/tmp/data.csv");
+
+      OutputStream output = new BufferedOutputStream(Files.newOutputStream(fileDate, CREATE));
+      BufferedWriter writeData = new BufferedWriter(new OutputStreamWriter(output));
+
+      //Write data to file.
+      while(rs.next()) {
+        writeData.write(rs.getString("advertiser_id") + " "+ rs.getDouble("latitude") + " " + rs.getDouble("longitude") + " "+ rs.getDouble("horizontal_accuracy") + " " + rs.getDate("timestamp") + " " + rs.getString("advertiser_id"));
+        writeData.newLine();
+      }
+
+      //Closes open files and connections.  
+      writeData.close();
+      con.close();
+     }
+
+     catch(Exception e){
+       System.out.println(e);
+     }
+  }
+}
